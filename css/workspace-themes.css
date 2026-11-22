@@ -1,0 +1,167 @@
+/* Active tab colours: set --vm-active-bg and --vm-active-fg TOGETHER (used
+   by tab-list.css). Default: a tint of the text colour, with the text colour.
+   Check pairs with scripts/check-contrast.py. */
+
+/* Rules for every Arcify theme use #browser[class*="theme-id-a1f0e000-…f"]:
+   all Arcify theme ids start with that, so a new theme gets them for free.
+
+   Extra styling per theme. Vivaldi puts .theme-id-<id> on #browser for the
+   active theme; ids are in themes/*.json. Colors themselves live
+   in those JSON files. */
+
+/* Every theme: Arc-style rounded, floating web view. */
+#browser[class*="theme-id-a1f0e000-0000-4000-8000-00000000f"] #webview-container,
+#browser[class*="theme-id-a1f0e000-0000-4000-8000-00000000f"] .webpageview,
+#browser[class*="theme-id-a1f0e000-0000-4000-8000-00000000f"] .webpageview webview {
+  border-radius: 12px;
+}
+
+/* ── Forest Night ───────────────────────────── */
+#browser.theme-id-a1f0e000-0000-4000-8000-00000000f001 {
+  background-image: radial-gradient(120% 90% at 0% 0%, #1d3a2a 0%, #0b1611 60%) !important;
+  background-attachment: fixed !important;
+}
+
+/* ── Ember ────────────────────────────── */
+#browser.theme-id-a1f0e000-0000-4000-8000-00000000f002 {
+  background-image: radial-gradient(110% 80% at 0% 0%, #4a1715 0%, #140e0f 55%) !important;
+  background-attachment: fixed !important;
+}
+/* Higher contrast: visible tiles, clear active tab, readable fields. */
+#browser.theme-id-a1f0e000-0000-4000-8000-00000000f002 .tab-position .tab {
+  color: #f3dedb;
+}
+#browser.theme-id-a1f0e000-0000-4000-8000-00000000f002 .tab-position .tab:hover {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+}
+#browser.theme-id-a1f0e000-0000-4000-8000-00000000f002 {
+  --vm-active-bg: rgba(249, 66, 59, 0.28);
+  --vm-active-fg: #ffffff;
+}
+#browser.theme-id-a1f0e000-0000-4000-8000-00000000f002 .UrlBar-AddressField,
+#browser.theme-id-a1f0e000-0000-4000-8000-00000000f002 .SearchField {
+  background-color: #2f2123 !important;
+  color: #fff6f4 !important;
+}
+
+/* ── Lime Glow ───────────────────────── */
+#browser.theme-id-a1f0e000-0000-4000-8000-00000000f003 {
+  background-image: linear-gradient(160deg, #DFFD31 0%, #F8C7B7 100%) !important;
+  background-attachment: fixed !important;
+}
+#browser.theme-id-a1f0e000-0000-4000-8000-00000000f003 {
+  --vm-active-bg: #030F1B;
+  --vm-active-fg: #DFFE2B;
+  --vm-active-bar: #DFFE2B;
+}
+
+/* ── Slate ─────────────────────────────── */
+#browser.theme-id-a1f0e000-0000-4000-8000-00000000f005 {
+  background-image: radial-gradient(120% 90% at 100% 0%, #2a3352 0%, #121620 60%) !important;
+  background-attachment: fixed !important;
+}
+
+/* ── Polska: white over red, like the flag ──── */
+#browser.theme-id-a1f0e000-0000-4000-8000-00000000f004 {
+  background-image: linear-gradient(180deg, #ffffff 0%, #fbf3f4 55%, #f6c9d1 85%, #e6475f 100%) !important;
+  background-attachment: fixed !important;
+  /* White card for the active tab: readable over the red part too. */
+  --vm-active-bg: rgba(255, 255, 255, 0.92);
+  --vm-active-fg: #120c0d;
+}
+
+/* Let the gradients show through the chrome around the page. */
+#browser[class*="theme-id-a1f0e000-0000-4000-8000-00000000f"] #header,
+#browser[class*="theme-id-a1f0e000-0000-4000-8000-00000000f"] #tabs-tabbar-container,
+#browser[class*="theme-id-a1f0e000-0000-4000-8000-00000000f"] #tabs-container,
+#browser[class*="theme-id-a1f0e000-0000-4000-8000-00000000f"] .mainbar,
+#browser[class*="theme-id-a1f0e000-0000-4000-8000-00000000f"] #panels-container,
+#browser[class*="theme-id-a1f0e000-0000-4000-8000-00000000f"] #main {
+  background: transparent !important;
+}
+
+/* ── Text contrast, all workspace themes ────── */
+/* Full-strength text in the tab bar (tabs are transparent over the window
+   background, so use the theme's own text colour, not Vivaldi's guess). */
+#browser[class*="theme-id-a1f0e000-0000-4000-8000-00000000f"] #tabs-tabbar-container .tab-position .tab:not(.active),
+#browser[class*="theme-id-a1f0e000-0000-4000-8000-00000000f"] #tabs-tabbar-container .tab:not(.active) .title,
+#browser[class*="theme-id-a1f0e000-0000-4000-8000-00000000f"] .tabbar-workspace-button,
+#browser[class*="theme-id-a1f0e000-0000-4000-8000-00000000f"] .toolbar-mainbar .button-toolbar > button {
+  color: var(--colorFgIntense, var(--colorFg)) !important;
+  opacity: 1 !important;
+}
+/* VivalArc fades the tab-bar buttons to 40%; 75% is still quiet but legible. */
+#browser[class*="theme-id-a1f0e000-0000-4000-8000-00000000f"]:not(.tabs-top):not(.tabs-bottom) .toolbar-tabbar > .button-toolbar > button {
+  opacity: 0.75 !important;
+}
+#browser[class*="theme-id-a1f0e000-0000-4000-8000-00000000f"]:not(.tabs-top):not(.tabs-bottom) .toolbar-tabbar > .button-toolbar > button:hover {
+  opacity: 1 !important;
+}
+/* Address field text. */
+#browser[class*="theme-id-a1f0e000-0000-4000-8000-00000000f"] .UrlBar-AddressField #urlFieldInput {
+  color: var(--colorFgIntense, var(--colorFg)) !important;
+}
+
+/* ── Paper: warm off-white, quiet ───────────── */
+#browser.theme-id-a1f0e000-0000-4000-8000-00000000f007 {
+  background-image: linear-gradient(165deg, #f6f4f0 0%, #ebe7df 100%) !important;
+  background-attachment: fixed !important;
+  --vm-active-bg: rgba(255, 255, 255, 0.95);
+  --vm-active-fg: #1d1c1a;
+}
+
+/* ── Arctic: icy blue, light ─────────────────── */
+#browser.theme-id-a1f0e000-0000-4000-8000-00000000f008 {
+  background-image: linear-gradient(165deg, #eef7ff 0%, #d6e8f7 55%, #c2dbf0 100%) !important;
+  background-attachment: fixed !important;
+  --vm-active-bg: rgba(255, 255, 255, 0.9);
+  --vm-active-fg: #0d2436;
+}
+
+/* ── Sakura: cherry blossom pink, light ──────── */
+#browser.theme-id-a1f0e000-0000-4000-8000-00000000f009 {
+  background-image: linear-gradient(160deg, #fff1f5 0%, #f8d9e3 60%, #f1c6d5 100%) !important;
+  background-attachment: fixed !important;
+  --vm-active-bg: rgba(255, 255, 255, 0.9);
+  --vm-active-fg: #3a1424;
+}
+
+/* ── Dune: warm sand, light ──────────────────── */
+#browser.theme-id-a1f0e000-0000-4000-8000-00000000f010 {
+  background-image: linear-gradient(170deg, #f8efe0 0%, #ecdcc2 60%, #e3cca8 100%) !important;
+  background-attachment: fixed !important;
+  --vm-active-bg: rgba(255, 251, 244, 0.92);
+  --vm-active-fg: #2e2216;
+}
+
+/* ── Matcha: soft green, light ───────────────── */
+#browser.theme-id-a1f0e000-0000-4000-8000-00000000f011 {
+  background-image: linear-gradient(160deg, #f1f8ea 0%, #dcebcd 60%, #cde2b9 100%) !important;
+  background-attachment: fixed !important;
+  --vm-active-bg: rgba(255, 255, 255, 0.9);
+  --vm-active-fg: #17260f;
+}
+
+/* ── Lagoon: deep teal, dark ─────────────────── */
+#browser.theme-id-a1f0e000-0000-4000-8000-00000000f012 {
+  background-image: radial-gradient(120% 90% at 0% 100%, #0f4a4f 0%, #071a1e 60%) !important;
+  background-attachment: fixed !important;
+  --vm-active-bg: rgba(46, 196, 182, 0.22);
+  --vm-active-fg: #ffffff;
+}
+
+/* ── Nebula: violet glow, dark ───────────────── */
+#browser.theme-id-a1f0e000-0000-4000-8000-00000000f013 {
+  background-image: radial-gradient(120% 90% at 100% 0%, #3d2578 0%, #120d22 62%) !important;
+  background-attachment: fixed !important;
+  --vm-active-bg: rgba(169, 139, 255, 0.24);
+  --vm-active-fg: #ffffff;
+}
+
+/* ── Sunset: plum into ember, dark ───────────── */
+#browser.theme-id-a1f0e000-0000-4000-8000-00000000f014 {
+  background-image: linear-gradient(200deg, #6a2a3e 0%, #2e1630 50%, #1a0f1c 100%) !important;
+  background-attachment: fixed !important;
+  --vm-active-bg: rgba(255, 138, 76, 0.24);
+  --vm-active-fg: #ffffff;
+}

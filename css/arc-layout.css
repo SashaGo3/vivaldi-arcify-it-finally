@@ -1,0 +1,195 @@
+/* Arc-style frame for every theme: the page floats inside the window with
+   rounded corners and a soft shadow; tabs move smoothly. */
+
+:root {
+  --arc-gap: 10px;
+  --arc-radius: 12px;
+}
+
+/* Rounded, inset page. overflow:hidden is what actually clips the page. */
+#browser:not(.fullscreen) #webview-container {
+  /* Same gap on all sides. !important: VivalArc sets margin:0 (and
+     margin-top:0 !important) with more specific selectors. */
+  margin: var(--arc-gap) !important;
+  border-radius: var(--arc-radius) !important;
+  overflow: hidden !important;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--colorFg) 8%, transparent),
+    0 6px 24px rgba(0, 0, 0, 0.18);
+}
+/* The page stack fills the frame exactly. Vivaldi gives it a 6px right and
+   bottom margin, and VivalArc a shadow ring of its own: together they drew a
+   second, inset outline on those two sides. The frame above draws the only
+   outline. */
+#browser:not(.fullscreen) #webview-container > #webpage-stack {
+  margin: 0 !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  border-radius: var(--arc-radius) !important;
+}
+#browser:not(.fullscreen) #webview-container .webpageview,
+#browser:not(.fullscreen) #webview-container webview {
+  border-radius: var(--arc-radius) !important;
+}
+
+/* Regular tabs: rounded, with gentle hover/active transitions. */
+#tabs-tabbar-container .tab-position:not(.is-pinned) .tab {
+  border-radius: 10px;
+  transition: background-color 160ms ease, box-shadow 160ms ease, color 160ms ease;
+}
+
+/* Address field: rounded pill like Arc's. */
+.UrlBar-AddressField {
+  border-radius: 10px !important;
+  transition: background-color 160ms ease, box-shadow 160ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #tabs-tabbar-container .tab,
+  .UrlBar-AddressField { transition: none !important; }
+}
+
+/* ── Vertical tab bar: tab list fills the full height ── */
+/* Vivaldi sizes .resize (pinned grid + tab list) with an inline max-height
+   for its own pinned layout, and gives the empty toolbar below flex:1, which
+   left a big gap at the bottom. */
+#tabs-tabbar-container #tabs-container .resize {
+  max-height: none !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+}
+#tabs-tabbar-container #tabs-container .toolbar-tabbar-after {
+  flex: 0 0 auto !important;
+}
+#tabs-tabbar-container .tab-strip {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  padding-bottom: 8px;
+  scrollbar-width: none;
+}
+#tabs-tabbar-container .tab-strip::-webkit-scrollbar {
+  display: none;
+  width: 0;
+}
+
+/* Fade at the edges when there is more to scroll (js/tab-scroll-fade.js). */
+#tabs-tabbar-container .tab-strip[data-fade~="bottom"] {
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 56px), transparent);
+}
+#tabs-tabbar-container .tab-strip[data-fade~="top"] {
+  mask-image: linear-gradient(to bottom, transparent, #000 32px);
+}
+#tabs-tabbar-container .tab-strip[data-fade~="top"][data-fade~="bottom"] {
+  mask-image: linear-gradient(to bottom, transparent, #000 32px, #000 calc(100% - 56px), transparent);
+}
+
+/* Hidden UI (tabs and address bar off): macOS draws its window buttons over
+   the top-left corner. Leave a title strip above the page for them, like
+   Arc does when its sidebar is hidden. */
+#browser.mac.tabs-off.address-top-off:not(.fullscreen) #webview-container {
+  margin-top: 32px !important;
+}
+
+/* ── Address field in the sidebar (Arc-style) ── */
+/* Put it there with the toolbar editor, or: tabbar_before =
+   ["WorkspaceButton", "AddressField"] (see README). It sits between the
+   workspace name and the pinned tiles. */
+#tabs-container .toolbar-tabbar-before {
+  gap: 6px;
+  padding: 0 6px 6px;
+}
+#tabs-container .toolbar-tabbar-before .UrlBar-AddressField {
+  flex: 0 0 auto !important;
+  align-self: stretch !important;
+  width: auto !important;
+  height: 34px !important;
+  margin: 0 !important;
+  border-radius: 10px !important;
+  border: none !important;
+  background-color: color-mix(in srgb, var(--colorFg) 9%, transparent) !important;
+  transition: background-color 160ms ease, box-shadow 160ms ease;
+}
+#tabs-container .toolbar-tabbar-before .UrlBar-AddressField:hover {
+  background-color: color-mix(in srgb, var(--colorFg) 14%, transparent) !important;
+}
+#tabs-container .toolbar-tabbar-before .UrlBar-AddressField:focus-within {
+  background-color: color-mix(in srgb, var(--colorFg) 16%, transparent) !important;
+  box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--colorHighlightBg) 70%, transparent) !important;
+}
+
+/* Regular tabs: Vivaldi's white "unread" corner triangle → small dot. */
+#tabs-tabbar-container .tab-position:not(.is-pinned) .tab.unread {
+  background-image: radial-gradient(circle at calc(100% - 10px) 50%,
+    var(--colorHighlightBg) 3px, transparent 3.6px) !important;
+}
+#tabs-tabbar-container .tab-position:not(.is-pinned) .tab.unread .title {
+  padding-right: 14px;
+}
+
+/* Vivaldi widens a focused address field in a narrow tab bar
+   (min-width ≈ 360px), so it spills over the page. Keep it in the sidebar;
+   only the suggestion list gets wider and floats over the page. */
+#tabs-container .toolbar-tabbar-before .UrlBar-AddressField:focus-within {
+  min-width: 100% !important; /* same as unfocused: exactly the sidebar */
+  max-width: 100% !important;
+  transform: none !important;
+  right: auto !important;
+  overflow: visible !important;
+}
+#tabs-container .toolbar-tabbar-before .UrlBar-AddressField .OmniDropdown {
+  min-width: 420px !important;
+  border-radius: 12px !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35) !important;
+}
+/* Page-action icons (reader, QR, translate, bookmark) only while editing. */
+#tabs-container .toolbar-tabbar-before .UrlBar-AddressField:not(:focus-within) .UrlBar-UrlFieldWrapper + .toolbar {
+  display: none !important;
+}
+
+/* Address field: hide Vivaldi's "Not Secure" label (http pages, local
+   servers). The ⓘ site-info icon stays, and its popup still shows the
+   connection details. */
+.UrlBar-AddressField .SiteInfoButton > button > .button-badge {
+  display: none !important;
+}
+
+/* Copy URL button (js/copy-url.js): at the right end of the address field,
+   shown on hover, hidden while you edit the address. */
+.UrlBar-AddressField {
+  position: relative;
+}
+.UrlBar-AddressField > .vm-copy-url {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  color: var(--colorFg);
+  background: color-mix(in srgb, var(--colorBg) 80%, var(--colorFg));
+  opacity: 0;
+  pointer-events: none;
+  cursor: default;
+  transition: opacity 120ms ease, background-color 120ms ease;
+}
+.UrlBar-AddressField:hover:not(:focus-within) > .vm-copy-url,
+.UrlBar-AddressField > .vm-copy-url[data-done] {
+  opacity: 0.85;
+  pointer-events: auto;
+}
+.UrlBar-AddressField > .vm-copy-url:hover {
+  opacity: 1;
+  background: color-mix(in srgb, var(--colorBg) 65%, var(--colorFg));
+}
+.UrlBar-AddressField > .vm-copy-url[data-done] {
+  color: var(--colorHighlightBg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .UrlBar-AddressField > .vm-copy-url { transition: none; }
+}

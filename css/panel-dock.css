@@ -1,0 +1,169 @@
+/* Panel dock: the side panel's icon strip becomes a row at the bottom of
+   the tab sidebar, shown when you hover the sidebar's bottom edge (or while
+   a panel is open). The sidebar and page get the strip's width back. An
+   open panel (Bookmarks, Downloads, …) covers the tab list: from under the
+   window buttons, where the tabs start, down to the row, as wide as the
+   sidebar.
+
+   For tabs on the left with the panel on the left (Settings > Panel >
+   Panel Position: Left). Other layouts are left as Vivaldi draws them.
+   Close button in the panel header: Settings > Panel > Show Close Button
+   (saved with the UI layout, see README). */
+
+#browser.tabs-left #main > .inner:has(> #panels-container.left) {
+  --vm-dock-peek: 12px;   /* strip at the bottom edge that opens the row */
+  --vm-dock-row: 44px;    /* height of the row */
+  --vm-dock-gap: 6px;     /* space around the row and the panel */
+}
+
+/* The tab sidebar (it starts under the window buttons) is the anchor for
+   the row and the open panel. */
+#browser.tabs-left #main > .inner:has(> #panels-container.left) #tabs-tabbar-container {
+  anchor-name: --vm-sidebar;
+}
+
+/* Take the strip out of the layout. Its two parts (#switch: the icons,
+   .panel-group: the open panel) are placed on their own below. */
+#browser.tabs-left #main > .inner > #panels-container.left,
+#browser.tabs-left #main > .inner > #panels-container.left > #panels {
+  display: contents !important;
+}
+
+/* ── The icon row ──
+   #switch is the hover area: a thin strip at the bottom edge that grows
+   (upward, so it stays under the mouse) to cover the row while hovered.
+   The visible card is the toolbar inside it; only its transform and
+   opacity animate. */
+#browser.tabs-left #panels-container.left #switch {
+  position: absolute !important;
+  position-anchor: --vm-sidebar;
+  left: calc(anchor(left) + var(--vm-dock-gap));
+  right: calc(anchor(right) + var(--vm-dock-gap));
+  bottom: 0;
+  width: auto !important;
+  max-width: none !important;
+  flex: none !important;
+  height: var(--vm-dock-peek) !important;
+  z-index: 20;
+  overflow: visible !important;
+  background: none !important;
+  /* Vivaldi hides the strip after the panel toggle (F4) or ×. The row
+     takes no room from the page, so it stays available. */
+  visibility: visible !important;
+}
+#browser.tabs-left #panels-container.left #switch * {
+  visibility: inherit;
+}
+#browser.tabs-left #panels-container.left #switch:hover,
+#browser.tabs-left #panels-container.left #switch:focus-within,
+#browser.tabs-left #panels-container.left.expanded #switch {
+  height: calc(var(--vm-dock-row) + 2 * var(--vm-dock-gap)) !important;
+}
+
+#browser.tabs-left #panels-container.left #switch > .toolbar-panel {
+  position: absolute !important;
+  left: 0;
+  right: 0;
+  bottom: var(--vm-dock-gap);
+  height: var(--vm-dock-row) !important;
+  width: auto !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  box-sizing: border-box !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: safe center !important;
+  gap: 0;
+  padding: 0 4px !important;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--colorBg) 88%, var(--colorFg));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--colorFg) 12%, transparent),
+    0 6px 20px rgba(0, 0, 0, 0.18);
+  /* Hidden: slid down out of the window. */
+  transform: translateY(calc(100% + 2 * var(--vm-dock-gap)));
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform;
+  transition: transform 160ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 120ms ease;
+}
+#browser.tabs-left #panels-container.left #switch:hover > .toolbar-panel,
+#browser.tabs-left #panels-container.left #switch:focus-within > .toolbar-panel,
+#browser.tabs-left #panels-container.left.expanded #switch > .toolbar-panel {
+  transform: none;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#browser.tabs-left #panels-container.left #switch > .toolbar-panel > .toolbar-spacer,
+#browser.tabs-left #panels-container.left #switch > .toolbar-panel > .toolbar-spacer-flexible {
+  display: none !important;
+}
+#browser.tabs-left #panels-container.left #switch > .toolbar-panel > .button-toolbar {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  height: auto !important;
+}
+#browser.tabs-left #panels-container.left #switch > .toolbar-panel > .button-toolbar > button {
+  width: 30px !important;
+  height: 32px !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+  border-radius: 8px !important;
+  color: var(--colorFg) !important;
+  opacity: 1 !important;
+}
+#browser.tabs-left #panels-container.left #switch > .toolbar-panel > .button-toolbar > button svg {
+  width: 20px;
+  height: 20px;
+}
+/* Some icons (Downloads) have a pale fill built in, invisible on light
+   themes: draw them in the text colour like the others. */
+#browser.tabs-left #panels-container.left #switch .button-icon.override svg [fill]:not([fill="none"]) {
+  fill: currentColor !important;
+}
+
+/* ── The open panel: over the tab list, as wide as the sidebar ── */
+#browser.tabs-left #panels-container.left .panel-group {
+  position: absolute !important;
+  position-anchor: --vm-sidebar;
+  left: calc(anchor(left) + var(--vm-dock-gap));
+  right: calc(anchor(right) + var(--vm-dock-gap));
+  top: anchor(top);
+  bottom: calc(var(--vm-dock-row) + 2 * var(--vm-dock-gap));
+  width: auto !important;
+  max-width: none !important;
+  /* Vivaldi's contain:strict sizes the box to 0 once it is positioned. */
+  contain: layout paint style !important;
+  flex: none !important;
+  z-index: 30;
+  border-radius: 12px !important;
+  overflow: hidden;
+  background: var(--colorBg) !important;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--colorFg) 12%, transparent),
+    0 12px 36px rgba(0, 0, 0, 0.28);
+}
+/* Vivaldi sets the panel's width inline (min/max-width); fit the card. */
+#browser.tabs-left #panels-container.left .panel-group > .panel-collapse-guard {
+  flex: 1 1 auto !important;
+  min-height: 0;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+}
+#browser.tabs-left #panels-container.left .panel-group .panel {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+/* Closed (Vivaldi uses .icons or .switcher then): no empty box. */
+#browser.tabs-left #panels-container.left:not(.expanded) .panel-group {
+  display: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #browser.tabs-left #panels-container.left #switch > .toolbar-panel { transition: none; }
+}

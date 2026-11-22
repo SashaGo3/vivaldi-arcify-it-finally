@@ -1,0 +1,7 @@
+.DS_Store
+.vscode/
+__pycache__/
+# Downloaded by setup (VivalArc has no license, so it isn't committed)
+css/vivalarc.css
+# Pinned tab sync data, written per Mac by scripts/pinned-sync.py
+css/vm-pinned-sync.css

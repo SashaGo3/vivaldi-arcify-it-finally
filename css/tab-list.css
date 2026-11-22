@@ -1,0 +1,449 @@
+/* Tab list (regular tabs): shorter titles, quieter list, clearer active
+   tab, dimmed old tabs and the Clear button. Works with js/tab-list.js. */
+
+/* Shorter title: hide the full text, show the short one. */
+#tabs-tabbar-container .tab-position:not(.is-pinned) .title[data-short] {
+  font-size: 0 !important;
+}
+#tabs-tabbar-container .tab-position:not(.is-pinned) .title[data-short]::before {
+  content: attr(data-short);
+  display: block;
+  font-size: 12px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Close button on the tab's icon: hover the icon and it turns into an ×
+   of the same size and shape. Nothing else in the row moves. */
+#tabs-tabbar-container .tab-position:not(.is-pinned) .tab .tab-header {
+  position: relative;
+}
+#tabs-tabbar-container .tab-position:not(.is-pinned) .tab .tab-header > .close,
+#tabs-tabbar-container .tab .tab-header > .vm-stack-close,
+#tabs-tabbar-container .accordion-toggle-arrow > .vm-stack-close {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  position: absolute !important;
+  left: 6px;
+  top: 50%;
+  transform: translateY(-50%) !important;
+  z-index: 2;
+  width: 18px !important;
+  min-width: 18px !important;
+  height: 18px !important;
+  min-height: 18px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0;
+  border-radius: 5px !important;
+  color: var(--colorFg);
+  background-color: color-mix(in srgb, var(--colorBg) 78%, var(--colorFg)) !important;
+  opacity: 0 !important;
+  pointer-events: auto !important;
+  cursor: default;
+  transition: opacity 120ms ease;
+}
+#tabs-tabbar-container .tab-position:not(.is-pinned) .tab .tab-header > .close svg {
+  width: 12px;
+  height: 12px;
+}
+#tabs-tabbar-container .tab-position:not(.is-pinned) .tab .tab-header > .close:hover,
+#tabs-tabbar-container .tab .tab-header > .vm-stack-close:is(:hover, [data-armed]),
+#tabs-tabbar-container .accordion-toggle-arrow > .vm-stack-close:is(:hover, [data-armed]) {
+  opacity: 1 !important;
+}
+#tabs-tabbar-container .tab-position:not(.is-pinned) .tab .tab-header > .close svg {
+  display: block;
+}
+/* Vivaldi hides a stack's count on hover (for its own ×): keep it. */
+#tabs-tabbar-container .tab.tab-accordion:hover .stack-counter {
+  display: block !important;
+}
+/* The icon steps aside while its × shows. */
+#tabs-tabbar-container .tab-header .favicon,
+#tabs-tabbar-container .vm-stack-icon {
+  transition: filter 120ms ease;
+}
+/* A filter, not opacity: VivalArc pins the favicon's opacity. */
+#tabs-tabbar-container .tab-header:has(> .close:hover, > .vm-stack-close:hover, > .vm-stack-close[data-armed]) .favicon,
+#tabs-tabbar-container .accordion-toggle-arrow:has(> .vm-stack-close:hover, > .vm-stack-close[data-armed]) .vm-stack-icon {
+  filter: opacity(0) !important;
+}
+
+/* Active tab: stronger background, accent bar on the left. Background and
+   text always come as a pair, so they can't clash: themes override both
+   with --vm-active-bg / --vm-active-fg (workspace-themes.css). */
+#tabs-tabbar-container .tab-position:not(.is-pinned) .tab.active {
+  background-color: var(--vm-active-bg, color-mix(in srgb, var(--colorFg) 16%, transparent)) !important;
+  box-shadow: inset 3px 0 0 var(--vm-active-bar, var(--colorHighlightBg)),
+    0 1px 3px rgba(0, 0, 0, 0.18) !important;
+}
+#tabs-tabbar-container .tab-position:not(.is-pinned) .tab.active,
+#tabs-tabbar-container .tab-position:not(.is-pinned) .tab.active .title,
+#tabs-tabbar-container .tab-position:not(.is-pinned) .tab.active .close {
+  color: var(--vm-active-fg, var(--colorFg)) !important;
+  fill: var(--vm-active-fg, var(--colorFg)) !important;
+}
+#tabs-tabbar-container .tab-position:not(.is-pinned) .tab.active .title {
+  font-weight: 600;
+}
+
+/* Favicons that match the sidebar (white icons on light themes, black on
+   dark ones): a thin, faint outline in the text colour keeps them visible.
+   Regular tabs only: pinned tiles have their own background. */
+#tabs-tabbar-container .tab-position:not(.is-pinned) .favicon img,
+#tabs-tabbar-container .tab-position:not(.is-pinned) .favicon svg {
+  filter: drop-shadow(0 0 0.5px color-mix(in srgb, var(--colorFg) 45%, transparent));
+}
+
+/* Old tabs (not opened for a while) and duplicates: dimmed until hovered. */
+/* A filter, not opacity: Vivaldi and VivalArc pin opacity on the tab, the
+   title and the favicon with !important. */
+#tabs-tabbar-container .tab-wrapper:is([data-vm~="old"], [data-vm~="dupe"], [data-vm~="junk"]) .tab:not(:hover):not(.active) .tab-header {
+  filter: opacity(0.45);
+}
+
+/* Kept tab (Alt+click): a dot on the right. It's never unloaded or
+   cleared. The dot sits where the close button appears, so it hides on
+   hover. */
+#tabs-tabbar-container .tab-position:not(.is-pinned) .tab-header[data-vm-badge] {
+  position: relative;
+}
+#tabs-tabbar-container .tab-position:not(.is-pinned) .tab-header[data-vm-badge] .title {
+  padding-right: 22px;
+}
+#tabs-tabbar-container .tab-position:not(.is-pinned) .tab-header[data-vm-badge]::after {
+  content: attr(data-vm-badge);
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 10px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--colorFg);
+  opacity: 0.55;
+  pointer-events: none;
+}
+#tabs-tabbar-container .tab-wrapper[data-vm~="kept"] .tab-header[data-vm-badge]::after {
+  font-size: 7px;
+  color: var(--colorHighlightBg);
+  opacity: 0.9;
+}
+#tabs-tabbar-container .tab-position:not(.is-pinned) .tab:is(:hover, .active) .tab-header[data-vm-badge]::after {
+  display: none;
+}
+#tabs-tabbar-container .tab-wrapper .tab-header {
+  transition: filter 200ms ease;
+}
+
+/* Clear button, at the right end of the line above the tab list. */
+#tabs-tabbar-container .tab-strip > .separator {
+  position: relative;
+}
+#tabs-tabbar-container .tab-strip > .separator .vm-clear {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  height: 18px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 9px;
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 18px;
+  color: var(--colorFg);
+  background: color-mix(in srgb, var(--colorBg) 85%, var(--colorFg));
+  opacity: 0.75;
+  cursor: default;
+  transition: opacity 120ms ease, background-color 120ms ease;
+}
+#tabs-tabbar-container .tab-strip > .separator .vm-clear:hover {
+  opacity: 1;
+  background: color-mix(in srgb, var(--colorBg) 70%, var(--colorFg));
+}
+#tabs-tabbar-container .tab-strip > .separator .vm-clear[data-mode="undo"] {
+  opacity: 1;
+  color: var(--colorBg);
+  background: var(--colorHighlightBg);
+}
+#tabs-tabbar-container .tab-strip > .separator .vm-clear[hidden] {
+  display: none;
+}
+/* Room for the button: the line stops before it. */
+#tabs-tabbar-container .tab-strip > .separator:has(.vm-clear:not([hidden])) hr {
+  margin-right: 64px !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #tabs-tabbar-container .tab-wrapper .tab-header,
+  #tabs-tabbar-container .close { transition: none !important; }
+}
+
+/* ── Tab stacks (accordion mode; js/stack-ui.js, js/site-stacks.js) ──
+   A stack is a soft card. Open: a small header (name, count, ×, chevron)
+   on top, its tabs below, lined up with the other tabs. Closed: one row
+   with the name, count and a chevron. js/stack-ui.js moves Vivaldi's
+   expand row to the top (it sets --vm-top); the stack's height doesn't
+   change, so nothing outside it moves. */
+#tabs-tabbar-container {
+  --vm-stack-bg: color-mix(in srgb, var(--colorFg) 6%, transparent);
+  --vm-stack-r: 10px;
+  --vm-head: 19px; /* Vivaldi's expand row height */
+}
+
+/* Vivaldi's frame around a stack: replaced by the card. */
+#tabs-tabbar-container .svg-tab-stack {
+  display: none !important;
+}
+/* No hatched selection pattern on stacked tabs. */
+#tabs-tabbar-container .tab.tab-in-accordion + .svg-tab-selection .inner {
+  fill: none !important;
+}
+
+/* Card background: on the rows, so it's continuous. */
+#tabs-tabbar-container .tab-strip[data-vm-stack-ui] .tab-position:has(> .tab-wrapper.in-accordion),
+#tabs-tabbar-container .tab-strip[data-vm-stack-ui] .tab-position.accordion-toggle-arrow.expanded {
+  background-color: var(--vm-stack-bg);
+}
+#tabs-tabbar-container .tab-strip[data-vm-stack-ui] .tab-position:has(.tab-last-in-group) {
+  border-radius: 0 0 var(--vm-stack-r) var(--vm-stack-r);
+}
+#tabs-tabbar-container .tab.tab-in-accordion:not(.active) {
+  background-color: transparent !important;
+}
+/* Tabs sit inside the card, with their own smaller corners, so the
+   highlighted tab never runs over the card's edges. */
+#tabs-tabbar-container .tab-strip[data-vm-stack-ui] .tab-wrapper.in-accordion {
+  padding: 0 4px !important;
+  box-sizing: border-box;
+}
+#tabs-tabbar-container .tab-strip[data-vm-stack-ui] .tab.tab-in-accordion {
+  border-radius: 7px !important;
+}
+#tabs-tabbar-container .tab-strip[data-vm-stack-ui] .tab-position:has(.tab-last-in-group) .tab-wrapper {
+  padding-bottom: 4px !important;
+}
+#tabs-tabbar-container .tab.tab-in-accordion:not(.active):hover {
+  background-color: color-mix(in srgb, var(--colorFg) 8%, transparent) !important;
+}
+
+/* Rows move by --vm-dy (js/stack-ui.js): down under an open stack's
+   header, up into the space a closed stack's arrow row left. */
+#tabs-tabbar-container .tab-strip[data-vm-stack-ui] .tab-position:not(.accordion-toggle-arrow) {
+  transform: translateX(var(--PositionX)) translateY(calc(var(--PositionY) + var(--vm-dy, 0px))) !important;
+}
+#tabs-tabbar-container .tab-strip[data-vm-stack-ui] {
+  padding-bottom: max(0px, var(--vm-extra, 0px));
+}
+
+/* The header (Vivaldi's expand row). */
+#tabs-tabbar-container .tab-strip[data-vm-stack-ui] .tab-position.accordion-toggle-arrow {
+  justify-content: flex-start !important;
+  align-items: center !important;
+  gap: 6px;
+  padding: 0 4px 0 10px !important;
+  color: var(--colorFg) !important;
+  background-clip: border-box !important;
+  cursor: default;
+}
+#tabs-tabbar-container .tab-strip[data-vm-stack-ui] .tab-position.accordion-toggle-arrow.expanded {
+  transform: translateX(var(--PositionX)) translateY(var(--vm-top, var(--PositionY))) !important;
+  border-radius: var(--vm-stack-r) var(--vm-stack-r) 0 0 !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  background-color: var(--vm-stack-bg) !important;
+  /* A full tab row, easy to click (Vivaldi's is 16px). */
+  height: var(--vm-row, 33px) !important;
+  max-height: none !important;
+}
+/* Vivaldi draws on the row's ::before / ::after: not here. */
+#tabs-tabbar-container .tab-strip[data-vm-stack-ui] .accordion-toggle-arrow::before,
+#tabs-tabbar-container .tab-strip[data-vm-stack-ui] .accordion-toggle-arrow::after {
+  display: none !important;
+}
+/* Header label: the site icon, the stack name and a count pill, like the
+   closed stack row, so open and closed look the same. */
+#tabs-tabbar-container .accordion-toggle-arrow > .vm-stack-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  margin-right: auto;
+}
+#tabs-tabbar-container .vm-stack-icon {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+}
+#tabs-tabbar-container .vm-stack-icon:not([src]):not([srcset]) {
+  visibility: hidden;
+}
+#tabs-tabbar-container .vm-stack-name {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  font-weight: 600;
+}
+#tabs-tabbar-container .vm-stack-count {
+  flex: none;
+  padding: 0 6px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 16px;
+  font-variant-numeric: tabular-nums;
+  background-color: color-mix(in srgb, var(--colorFg) 12%, transparent);
+  opacity: 0.75;
+}
+#tabs-tabbar-container .accordion-toggle-arrow.closed > .vm-stack-label {
+  display: none;
+}
+/* Buttons: the chevron (Vivaldi's arrow icon, redrawn) and × share one
+   size and hover look, right-aligned: [NAME 7 ········ × ⌄]. */
+#tabs-tabbar-container .tab-strip[data-vm-stack-ui] .accordion-toggle-arrow .VivaldiSvgIcon {
+  flex: none;
+  display: grid !important;
+  place-items: center;
+  width: 22px !important;
+  min-width: 22px;
+  height: 22px !important;
+  padding: 0;
+  margin: 0 !important;
+  border-radius: 5px;
+  transform: none !important;
+}
+#tabs-tabbar-container .tab-strip[data-vm-stack-ui] .accordion-toggle-arrow .VivaldiSvgIcon {
+  order: 3;
+  color: inherit;
+  opacity: 0.6;
+  transition: opacity 120ms ease, background-color 120ms ease;
+}
+#tabs-tabbar-container .tab-strip[data-vm-stack-ui] .accordion-toggle-arrow .VivaldiSvgIcon svg {
+  display: none !important;
+}
+/* The chevron: ⌄ when open, › when closed; it turns between the two. */
+#tabs-tabbar-container .tab-strip[data-vm-stack-ui] .accordion-toggle-arrow .VivaldiSvgIcon::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  margin-top: -3px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 200ms cubic-bezier(0.2, 0.8, 0.2, 1), margin 200ms ease;
+}
+#tabs-tabbar-container .tab-strip[data-vm-stack-ui] .accordion-toggle-arrow.closed .VivaldiSvgIcon::before {
+  margin: 0 0 0 -2px;
+  transform: rotate(-45deg);
+}
+#tabs-tabbar-container .tab-strip[data-vm-stack-ui] .accordion-toggle-arrow:hover .VivaldiSvgIcon {
+  opacity: 1;
+  background-color: color-mix(in srgb, var(--colorFg) 12%, transparent);
+}
+#tabs-tabbar-container .tab-strip[data-vm-stack-ui] .accordion-toggle-arrow.expanded {
+  gap: 2px !important;
+}
+
+/* Closed stack: the expand row becomes a chevron button inside the stack
+   row (right end), so the row reads [Jira  7 ›]. The 19px under it is
+   left as space between groups. */
+#tabs-tabbar-container .tab-strip[data-vm-stack-ui] .tab-position.accordion-toggle-arrow.closed {
+  /* --vm-right: the stack row's real right edge (it's wider than --Width). */
+  transform: translateX(calc(var(--vm-right, calc(var(--PositionX) + var(--Width))) - 30px)) translateY(var(--vm-top, var(--PositionY))) !important;
+  width: 30px !important;
+  height: var(--vm-row, 33px) !important;
+  max-height: none !important;
+  padding: 0 !important;
+  justify-content: center !important;
+  z-index: 3 !important;
+  background: transparent !important;
+  border-radius: 0 var(--vm-stack-r) var(--vm-stack-r) 0 !important;
+}
+#tabs-tabbar-container .tab-strip[data-vm-stack-ui] .tab-position.accordion-toggle-arrow.closed .VivaldiSvgIcon {
+  width: 22px !important;
+  height: 22px !important;
+  border-radius: 6px;
+}
+/* A closed stack's × is on its row's icon, not on the arrow. */
+#tabs-tabbar-container .tab-strip[data-vm-stack-ui] .tab-position.accordion-toggle-arrow.closed > .vm-stack-close {
+  display: none !important;
+}
+#tabs-tabbar-container .tab.tab-accordion {
+  border-radius: var(--vm-stack-r) !important;
+  background-color: var(--vm-stack-bg);
+}
+#tabs-tabbar-container .tab.tab-accordion .title {
+  font-weight: 600;
+}
+/* Count pill, moved left to leave room for the chevron. */
+#tabs-tabbar-container .tab.tab-accordion .stack-counter {
+  min-width: 0 !important;
+  padding: 0 6px !important;
+  margin-right: 32px !important;
+  border-radius: 8px !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  line-height: 16px !important;
+  font-variant-numeric: tabular-nums;
+  color: var(--colorFg) !important;
+  background-color: color-mix(in srgb, var(--colorFg) 12%, transparent) !important;
+  opacity: 0.75;
+}
+
+/* Animations: tabs fade in when a stack opens; the chevron turns. */
+@keyframes vm-stack-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+#tabs-tabbar-container .tab-wrapper.in-accordion {
+  animation: vm-stack-in 180ms ease-out both;
+}
+#tabs-tabbar-container .tab.tab-accordion,
+#tabs-tabbar-container .tab.tab-in-accordion,
+#tabs-tabbar-container .accordion-toggle-arrow {
+  transition: background-color 140ms ease;
+}
+
+/* × to close a whole stack (js/stack-ui.js): on the stack's icon, like
+   a tab's ×. First click asks ("Close 6", over the name), the second
+   closes. Styles shared with the tab × above. */
+#tabs-tabbar-container .accordion-toggle-arrow > .vm-stack-close {
+  left: 10px; /* the header's icon */
+}
+#tabs-tabbar-container .tab .tab-header > .vm-stack-close[data-armed],
+#tabs-tabbar-container .accordion-toggle-arrow > .vm-stack-close[data-armed] {
+  width: auto !important;
+  padding: 0 8px !important;
+  font-size: 10.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: #fff;
+  background-color: #d9443b !important;
+}
+/* Vivaldi's own × on a closed stack's row: our stack × replaces it. */
+#tabs-tabbar-container .tab.tab-accordion .tab-header > .close {
+  display: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #tabs-tabbar-container .tab-wrapper.in-accordion { animation: none; }
+  #tabs-tabbar-container .tab.tab-accordion,
+  #tabs-tabbar-container .tab.tab-in-accordion,
+  #tabs-tabbar-container .accordion-toggle-arrow,
+  #tabs-tabbar-container .accordion-toggle-arrow .VivaldiSvgIcon,
+  #tabs-tabbar-container .vm-stack-close { transition: none !important; }
+}
+
+
+/* While "Close 7" asks, the count beside it would repeat the number. */
+#tabs-tabbar-container .accordion-toggle-arrow:has(> .vm-stack-close[data-armed]) .vm-stack-count {
+  visibility: hidden;
+}

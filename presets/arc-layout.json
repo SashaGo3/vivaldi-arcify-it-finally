@@ -1,0 +1,17 @@
+{
+  "_about": "The Vivaldi settings behind the Arc look. setup.sh applies them when you say yes to the recommended layout (or \"arcLayout\": true in your config). Each key is a path in Vivaldi's Preferences.",
+  "vivaldi.tabs.bar.position": 1,
+  "vivaldi.tabs.bar.width": 244,
+  "vivaldi.tabs.visible": true,
+  "vivaldi.tabs.stacking.mode": 3,
+  "vivaldi.tabs.unread": true,
+  "vivaldi.address_bar.visible": false,
+  "vivaldi.bookmarks.bar.visible": false,
+  "vivaldi.status_bar.display": 2,
+  "vivaldi.panels.position": 0,
+  "vivaldi.panels.show_toggle": false,
+  "vivaldi.panels.show_close_button": true,
+  "vivaldi.panels.as_overlay.enabled": false,
+  "vivaldi.appearance.density": true,
+  "vivaldi.windows.use_native_decoration": false
+}
