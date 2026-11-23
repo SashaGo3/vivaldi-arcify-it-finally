@@ -1,0 +1,56 @@
+#!/bin/zsh
+# arcify: one command for Vivaldi Arcify. Run `arcify help`.
+# AI agents: read AGENTS.md first.
+set -euo pipefail
+REPO=${0:A:h}
+
+usage() {
+  cat <<'EOF'
+Vivaldi Arcify
+
+Set up
+  arcify ui                    Open the settings page in Vivaldi (easiest)
+  arcify setup                 Set up in the terminal (asks a few questions)
+  arcify apply                 Apply the config. No questions. Restarts Vivaldi.
+  arcify reload                Apply JS changes without quitting Vivaldi
+  arcify update                Get the newest version and apply it
+  arcify uninstall [--all]     Remove the mods (--all: also your config)
+
+Look
+  arcify status [--json]       What is installed and on
+  arcify themes [--json]       The themes
+  arcify get [KEY]             Your config, or one key (JSON)
+
+Change the config (then run `arcify apply`)
+  arcify set KEY=VALUE…        e.g. arcify set defaultTheme=Slate autoReinstall=true
+  arcify workspace NAME [--theme T] [--emoji E] [--route TEXT]…
+  arcify workspace NAME --remove
+  arcify config                Open the config file in a text editor
+EOF
+}
+
+cmd=${1:-help}; (( $# )) && shift
+case $cmd in
+  ui)        exec /usr/bin/python3 "$REPO/scripts/setup-ui.py" "$@" ;;
+  setup)     exec "$REPO/setup.sh" "$@" ;;
+  apply)     exec "$REPO/setup.sh" --yes "$@" </dev/null ;;
+  reload)    exec "$REPO/update.sh" "$@" ;;
+  uninstall) exec "$REPO/uninstall.sh" "$@" ;;
+  status|themes|get|set|workspace)
+    exec /usr/bin/python3 "$REPO/scripts/arcify_cli.py" "$cmd" "$@" ;;
+  update)
+    if [[ -d "$REPO/.git" ]]; then
+      git -C "$REPO" pull --ff-only --quiet || { print -u2 "Couldn't update: local changes in $REPO?"; exit 1; }
+      exec "$REPO/setup.sh" --yes "$@" </dev/null
+    fi
+    curl -fsSL https://raw.githubusercontent.com/SashaGo3/vivaldi-arcify-it-finally/main/install.sh | zsh -s -- --yes
+    ;;
+  config)
+    source "$REPO/scripts/lib.zsh"
+    [[ -f "$ARCIFY_CONFIG" ]] || { print -u2 "No config yet. Run: arcify ui"; exit 1; }
+    open -t "$ARCIFY_CONFIG"
+    print "Opened $ARCIFY_CONFIG. After you change it: arcify apply"
+    ;;
+  help|-h|--help) usage ;;
+  *) print -u2 "Unknown command: $cmd\n"; usage >&2; exit 1 ;;
+esac

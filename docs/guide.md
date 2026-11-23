@@ -29,6 +29,67 @@ Themes, workspaces and layout settings live in Vivaldi's `Preferences` file
 (JSON). The Python scripts change that file while Vivaldi is quit, after
 writing a backup: `Preferences.bak-arcify` and `Preferences.bak-arcify-themes`.
 
+## Config file
+
+Your settings are in `~/Library/Application Support/VivaldiArcify/config.json`,
+or in `iCloud Drive/VivaldiArcify/config.json` if you chose iCloud. Edit the
+file, then run `arcify setup` (or `arcify reload` for tab options).
+
+```json
+{
+  "defaultTheme": "Graphite",
+  "workspaces": [
+    { "name": "Work", "emoji": "💼", "theme": "Slate",
+      "linkRoutes": [{ "expression": "github.com", "type": "CONTAINS" }] },
+    { "name": "Personal", "emoji": "🌿", "theme": "Forest Night" }
+  ],
+  "oldTabHours": 5,
+  "oldTabHoursBySite": { "google.com/search": 1 }
+}
+```
+
+| Key | What it does | Default |
+|---|---|---|
+| `workspaces` | Created if missing (matched by name). `emoji` sets the icon, `theme` the starting theme, `linkRoutes` are Vivaldi's "open links matching … here" rules. Nothing is ever deleted. | `[]` |
+| `defaultTheme` | Theme for workspaces with none yet, and for tabs outside any workspace | `Graphite` |
+| `arcLayout` | Apply the recommended layout ([`presets/arc-layout.json`](presets/arc-layout.json)) | `true` |
+| `addressFieldInSidebar` | Put the address field in the sidebar | `true` |
+| `oldTabHours` | Tabs you haven't opened for this long count as old (dimmed, closed by Clear) | `5` |
+| `oldTabHoursBySite` | Different limits per site: a host (with subdomains) or part of an address | `{}` |
+| `unloadTabHours` | Unload tabs idle this long to free memory (`0` = never) | `1` |
+| `saveClearedTabs` | Clear saves the closed tabs to a "Cleared tabs" bookmark folder | `true` |
+| `groupBySite` / `groupBySiteMin` | Stack tabs from the same site / from how many tabs. Needs Settings > Tabs > Tab Stacking (Accordion) | `true` / `3` |
+| `autoReinstall` | Reinstall the mods after Vivaldi updates (helper app) | asked |
+| `syncPinnedTabs` | Back up pinned tabs to bookmarks and sync them between Macs | asked |
+| `syncFolder` | Folder for pinned tab sync, if not iCloud (e.g. `~/Dropbox/VivaldiArcify`) | config's folder |
+| `vivaldiUI` | Your whole UI layout, saved by `arcify reload --save-config`, so another Mac looks the same | none |
+
+**Save your current workspaces and layout to the config:** run
+`arcify reload --save-config`. Run `arcify setup` on another Mac to get the same
+setup there.
+
+## Pinned tab sync
+
+With sync on, your pinned tabs are kept in two places:
+
+- **Backup:** the bookmark folder *Other Bookmarks > Pinned tabs (synced)*,
+  with one subfolder per workspace.
+- **Shared:** `pinned-tabs.json` in iCloud Drive (or your `syncFolder`).
+
+How it behaves:
+
+- Pin a tab on one Mac, and it's pinned in the workspace with the same name
+  on your other Macs. If that page is already open there, that tab is
+  pinned; otherwise a new tab opens. No duplicates.
+- Unpin it, and it's unpinned on the other Macs. Tabs are never closed.
+- If a Mac suddenly has far fewer pinned tabs (say, a window didn't come
+  back), the change is held until you confirm it with
+  `scripts/pinned-sync.sh --accept`.
+
+`scripts/pinned-sync.sh --status` shows what's shared, and `--log` shows
+what the job did. Open **Vivaldi Arcify** in Applications to check the
+helper app's permissions.
+
 ## Set it up by hand
 
 1. **Get VivalArc.** Download
@@ -82,7 +143,11 @@ independent, so you can delete the ones you don't want and run
 | `js/back-closes-tab.js` | Cmd+[ on a link tab with no history closes it |
 | `js/tab-scroll-fade.js` | Marks the tab list's scrollable edges for the fade |
 | `js/pinned-sync.js` | Pinned tab backup folder and applying other Macs' changes (only with `syncPinnedTabs`) |
-| `setup.sh` / `update.sh` / `uninstall.sh` / `install.sh` | See the README |
+| `arcify` | The command: `arcify help` lists what it does |
+| `scripts/arcify_cli.py` | `arcify status/themes/get/set/workspace`: no questions, `--json` |
+| `AGENTS.md`, `CLAUDE.md` | How AI agents should use and change this repo |
+| `setup.sh` / `update.sh` / `uninstall.sh` / `install.sh` | Run by `arcify`; see the README |
+| `scripts/setup-ui.py`, `ui/index.html` | The settings page (`arcify ui`): a local server on 127.0.0.1 with a random token, opened in Vivaldi |
 | `scripts/lib.zsh`, `scripts/arcify_paths.py` | Where things are (overridable, see below) |
 | `scripts/apply-prefs.py` | CSS folder, layout, workspaces, link routes (Vivaldi quit) |
 | `scripts/install-themes.py` | Adds or updates the themes (Vivaldi quit) |

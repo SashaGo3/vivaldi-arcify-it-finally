@@ -5,8 +5,8 @@
 #
 # Downloads the mods to ~/Library/Application Support/VivaldiArcify/app (git
 # clone if you have git, a plain download if not), or updates them if they're
-# already there, then runs setup.sh. Options are passed on to setup.sh
-# (… | zsh -s -- --yes).
+# already there, then opens the settings page in Vivaldi. With options, runs
+# setup.sh in the terminal instead (… | zsh -s -- --yes for all defaults).
 #
 # Override with ARCIFY_DIR (where the mods go) and ARCIFY_REPO (owner/name).
 set -euo pipefail
@@ -37,8 +37,21 @@ else
   rm -rf "$tmp"
 fi
 
-# Piped into zsh, stdin is this script: give setup the terminal for its questions.
-if [[ ! -t 0 ]] && [[ -r /dev/tty ]] && { : </dev/tty; } 2>/dev/null; then
-  exec "$DIR/setup.sh" "$@" </dev/tty
+# Put `arcify` on the PATH when there's a place for it.
+for bin in /opt/homebrew/bin /usr/local/bin "$HOME/.local/bin"; do
+  if [[ -d "$bin" && -w "$bin" && ":$PATH:" == *":$bin:"* ]]; then
+    ln -sf "$DIR/arcify" "$bin/arcify"; say "Command: arcify (try: arcify help)"; break
+  fi
+done
+
+# With options (e.g. --yes): set up in the terminal. Without: open the
+# settings page in Vivaldi, where you pick themes and click Apply.
+if (( $# )); then
+  # Piped into zsh, stdin is this script: give setup the terminal for its questions.
+  if [[ ! -t 0 ]] && [[ -r /dev/tty ]] && { : </dev/tty; } 2>/dev/null; then
+    exec "$DIR/setup.sh" "$@" </dev/tty
+  fi
+  exec "$DIR/setup.sh" "$@"
 fi
-exec "$DIR/setup.sh" "$@"
+say "Opening the settings page in Vivaldi. Keep this window open until you're done."
+exec /usr/bin/python3 "$DIR/scripts/setup-ui.py"

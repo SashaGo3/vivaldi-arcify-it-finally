@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vivaldi Arcify</title>
+<style>
+  /* Colors follow the default theme you pick below. */
+  :root {
+    --bg: #26262a; --fg: #f2f2f4; --win: #18181b; --hi: #a8b0c0; --acc: #3a3a40;
+    --muted: color-mix(in srgb, var(--fg) 62%, transparent);
+    --line: color-mix(in srgb, var(--fg) 12%, transparent);
+    --card: color-mix(in srgb, var(--fg) 4%, var(--bg));
+    --on-hi: #000;
+    --r: 14px;
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--win); }
+  body {
+    margin: 0; padding: 10px; min-height: 100vh;
+    font: 14px/1.45 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+    color: var(--fg); background: var(--win);
+    -webkit-font-smoothing: antialiased;
+    transition: background .3s, color .3s;
+  }
+  .frame {
+    max-width: 860px; margin: 0 auto; background: var(--bg);
+    border-radius: var(--r); padding: 28px 28px 110px;
+    box-shadow: 0 1px 3px rgb(0 0 0 / .15);
+    transition: background .3s;
+  }
+  h1 { font-size: 26px; margin: 0 0 4px; letter-spacing: -.02em; }
+  h2 { font-size: 15px; margin: 0 0 2px; }
+  .sub { color: var(--muted); margin: 0 0 22px; }
+  section { border-top: 1px solid var(--line); padding: 20px 0; }
+  section > p.hint { margin: 0 0 14px; color: var(--muted); font-size: 13px; }
+  .status { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 22px; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 99px; font-size: 12px;
+    background: var(--card); border: 1px solid var(--line);
+  }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }
+  .dot.on { background: #34c759; } .dot.warn { background: #ff9f0a; }
+
+  .themes { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 10px; }
+  .theme {
+    all: unset; cursor: pointer; border-radius: 12px; overflow: hidden;
+    border: 2px solid transparent; background: var(--card);
+    transition: transform .15s, border-color .15s;
+  }
+  .theme:hover { transform: translateY(-1px); }
+  .theme:focus-visible { outline: 2px solid var(--hi); outline-offset: 2px; }
+  .theme[aria-pressed="true"] { border-color: var(--hi); }
+  .swatch { height: 58px; padding: 7px; display: flex; gap: 5px; }
+  .swatch .side { width: 22px; border-radius: 5px; display: flex; flex-direction: column; gap: 3px; padding: 4px 3px; }
+  .swatch .side i { height: 4px; border-radius: 2px; opacity: .5; }
+  .swatch .page { flex: 1; border-radius: 6px; position: relative; }
+  .swatch .page b { position: absolute; left: 7px; top: 8px; width: 40%; height: 5px; border-radius: 3px; }
+  .theme span { display: block; padding: 6px 9px 8px; font-size: 12px; font-weight: 500; }
+
+  .ws { display: grid; gap: 8px; }
+  .ws-row {
+    display: grid; grid-template-columns: 46px 1fr 170px 30px; gap: 8px; align-items: center;
+    padding: 6px; border-radius: 10px; background: var(--card); border: 1px solid var(--line);
+  }
+  .ws-row .tag { font-size: 11px; color: var(--muted); }
+  input[type=text], input[type=number], select {
+    font: inherit; color: var(--fg); background: var(--bg);
+    border: 1px solid var(--line); border-radius: 8px; padding: 6px 9px; width: 100%;
+  }
+  input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px solid var(--hi); outline-offset: 1px; }
+  input.emoji { text-align: center; padding: 6px 0; }
+  .name-fixed { padding: 6px 2px; }
+  .icon-btn {
+    all: unset; cursor: pointer; width: 30px; height: 30px; border-radius: 8px;
+    display: grid; place-items: center; color: var(--muted);
+  }
+  .icon-btn:hover { background: var(--line); color: var(--fg); }
+
+  .opt { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; }
+  .opt + .opt { border-top: 1px dashed var(--line); }
+  .opt .txt { flex: 1; }
+  .opt .txt small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 1px; }
+  .opt input[type=number] { width: 80px; }
+  .switch { position: relative; width: 38px; height: 22px; flex: none; margin-top: 1px; }
+  .switch input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+  .switch span { position: absolute; inset: 0; border-radius: 99px; background: var(--line); transition: background .15s; pointer-events: none; }
+  .switch span::after {
+    content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%;
+    background: var(--fg); transition: transform .15s;
+  }
+  .switch input:checked + span { background: var(--hi); }
+  .switch input:checked + span::after { transform: translateX(16px); background: var(--on-hi); }
+  .switch input:disabled + span { opacity: .4; }
+  .switch input:focus-visible + span { outline: 2px solid var(--hi); outline-offset: 2px; }
+
+  button.btn {
+    font: inherit; font-weight: 600; cursor: pointer; border-radius: 10px;
+    padding: 9px 16px; border: 1px solid var(--line); background: var(--card); color: var(--fg);
+  }
+  button.btn.primary { background: var(--hi); color: var(--on-hi); border-color: transparent; }
+  button.btn:disabled { opacity: .5; cursor: default; }
+  button.btn.small { padding: 6px 12px; font-weight: 500; font-size: 13px; }
+
+  .bar {
+    position: fixed; left: 0; right: 0; bottom: 0; padding: 12px 16px;
+    display: flex; justify-content: center;
+  }
+  .bar-inner {
+    width: 100%; max-width: 840px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+    padding: 10px 12px; border-radius: 14px; background: color-mix(in srgb, var(--bg) 88%, transparent);
+    border: 1px solid var(--line); backdrop-filter: blur(16px); box-shadow: 0 6px 24px rgb(0 0 0 / .18);
+  }
+  .bar-inner .msg { flex: 1; min-width: 180px; font-size: 12.5px; color: var(--muted); }
+
+  .log-wrap { display: none; }
+  .log-wrap.show { display: block; }
+  pre.log {
+    margin: 10px 0 0; max-height: 320px; overflow: auto; padding: 12px 14px; border-radius: 10px;
+    background: var(--win); font: 12px/1.5 ui-monospace, "SF Mono", Menlo, monospace; white-space: pre-wrap;
+  }
+  .banner { padding: 12px 14px; border-radius: 10px; margin-bottom: 18px; background: var(--acc); }
+  .banner.err { background: color-mix(in srgb, #ff453a 25%, var(--bg)); }
+  code { font: 12px ui-monospace, "SF Mono", Menlo, monospace; background: var(--card); padding: 1px 5px; border-radius: 5px; }
+
+  @media (max-width: 600px) {
+    body { padding: 0; }
+    .frame { border-radius: 0; padding: 20px 16px 140px; }
+    .ws-row { grid-template-columns: 42px 1fr 30px; }
+    .ws-row select { grid-column: 1 / -1; }
+    .ws-row .icon-btn { grid-row: 1; grid-column: 3; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="frame">
+  <h1>Vivaldi Arcify</h1>
+  <p class="sub">Pick your themes and options, then apply. Vivaldi restarts once, and your tabs come back.</p>
+
+  <div id="banner"></div>
+  <div class="status" id="status" aria-label="Status"></div>
+
+  <section class="log-wrap" id="logWrap" aria-live="polite">
+    <h2 id="logTitle">Setting up…</h2>
+    <pre class="log" id="log"></pre>
+  </section>
+
+  <section>
+    <h2>Default theme</h2>
+    <p class="hint">Used for new workspaces and for tabs outside any workspace. This page shows it.</p>
+    <div class="themes" id="themes" role="group" aria-label="Default theme"></div>
+  </section>
+
+  <section>
+    <h2>Workspaces</h2>
+    <p class="hint">Give each workspace a starting theme. New names are created in Vivaldi; nothing is ever deleted there.
+      A theme you already picked inside Vivaldi wins over this.</p>
+    <div class="ws" id="ws"></div>
+    <p style="margin:10px 0 0"><button class="btn small" id="addWs" type="button">+ Add workspace</button></p>
+  </section>
+
+  <section>
+    <h2>Layout</h2>
+    <div id="layoutOpts"></div>
+  </section>
+
+  <section>
+    <h2>Tabs</h2>
+    <div id="tabOpts"></div>
+  </section>
+
+  <section>
+    <h2>Extras</h2>
+    <div id="extraOpts"></div>
+  </section>
+
+  <section>
+    <h2>Your config</h2>
+    <p class="hint" id="cfgPath" style="margin:0"></p>
+  </section>
+</div>
+
+<div class="bar">
+  <div class="bar-inner">
+    <span class="msg" id="barMsg">Nothing changed yet.</span>
+    <button class="btn" id="quickBtn" type="button" title="Tab options only. Needs a restart to take effect.">Save tab options only</button>
+    <button class="btn primary" id="applyBtn" type="button">Apply and restart Vivaldi</button>
+  </div>
+</div>
+
+<script>
+const T = new URLSearchParams(location.search).get('t');
+const api = (path, body) => fetch(path + '?t=' + encodeURIComponent(T), body === undefined ? {} : {
+  method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+}).then(async (r) => { const j = await r.json(); if (!r.ok) throw new Error(j.error || r.status); return j; });
+
+const $ = (id) => document.getElementById(id);
+const el = (tag, props = {}, ...kids) => {
+  const e = Object.assign(document.createElement(tag), props);
+  for (const k of kids) e.append(k);
+  return e;
+};
+
+let S, cfg, rows = [], dirty = false;
+const DEFAULTS = { defaultTheme: 'Graphite', arcLayout: true, addressFieldInSidebar: true,
+  oldTabHours: 5, unloadTabHours: 1, saveClearedTabs: true, groupBySite: true,
+  autoReinstall: true, syncPinnedTabs: false };
+
+function markDirty() {
+  dirty = true;
+  $('barMsg').textContent = 'Unsaved changes.';
+}
+
+// ── Theme colors on this page ───────────────────────────────────────────
+function lum(hex) {
+  const n = parseInt(hex.slice(1), 16);
+  const c = [n >> 16, (n >> 8) & 255, n & 255].map((v) => { v /= 255; return v <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4; });
+  return .2126 * c[0] + .7152 * c[1] + .0722 * c[2];
+}
+function paint(name) {
+  const t = S.themes.find((x) => x.name === name) || S.themes[0];
+  const s = document.documentElement.style;
+  s.setProperty('--bg', t.colorBg); s.setProperty('--fg', t.colorFg);
+  s.setProperty('--win', t.colorWindowBg); s.setProperty('--hi', t.colorHighlightBg);
+  s.setProperty('--acc', t.colorAccentBg);
+  s.setProperty('--on-hi', lum(t.colorHighlightBg) > .4 ? '#000' : '#fff');
+  document.documentElement.style.colorScheme = lum(t.colorBg) > .4 ? 'light' : 'dark';
+}
+
+// ── Sections ────────────────────────────────────────────────────────────
+function renderThemes() {
+  const box = $('themes'); box.replaceChildren();
+  for (const t of S.themes) {
+    const sw = el('div', { className: 'swatch' });
+    sw.style.background = t.colorWindowBg;
+    const side = el('div', { className: 'side' }, el('i'), el('i'), el('i'));
+    side.style.background = t.colorWindowBg;
+    side.querySelectorAll('i').forEach((i) => (i.style.background = t.colorFg));
+    const page = el('div', { className: 'page' }, el('b'));
+    page.style.background = t.colorBg;
+    page.querySelector('b').style.background = t.colorHighlightBg;
+    sw.append(side, page);
+    const b = el('button', { className: 'theme', type: 'button' }, sw, el('span', { textContent: t.name }));
+    b.setAttribute('aria-pressed', String(cfg.defaultTheme === t.name));
+    b.onclick = () => { cfg.defaultTheme = t.name; paint(t.name); renderThemes(); markDirty(); };
+    box.append(b);
+  }
+}
+
+function renderWs() {
+  const box = $('ws'); box.replaceChildren();
+  if (!rows.length) box.append(el('p', { className: 'hint', textContent: 'No workspaces yet.', style: 'margin:0;color:var(--muted)' }));
+  rows.forEach((r, i) => {
+    const emoji = el('input', { type: 'text', className: 'emoji', value: r.emoji || '', maxLength: 4,
+      ariaLabel: 'Emoji', placeholder: '·' });
+    emoji.oninput = () => { r.emoji = emoji.value.trim(); markDirty(); };
+
+    let name;
+    if (r.inVivaldi) {
+      name = el('div', { className: 'name-fixed' }, r.name + ' ', el('span', { className: 'tag', textContent: 'in Vivaldi' }));
+    } else {
+      name = el('input', { type: 'text', value: r.name, placeholder: 'Workspace name', ariaLabel: 'Workspace name' });
+      name.oninput = () => { r.name = name.value; markDirty(); };
+    }
+
+    const sel = el('select', { ariaLabel: 'Theme for ' + (r.name || 'workspace') },
+      el('option', { value: '', textContent: 'Default theme' }),
+      ...S.themes.map((t) => el('option', { value: t.name, textContent: t.name })));
+    sel.value = r.theme || '';
+    sel.onchange = () => { r.theme = sel.value; markDirty(); };
+
+    const del = el('button', { className: 'icon-btn', type: 'button', textContent: '✕',
+      ariaLabel: r.inVivaldi ? 'Clear settings for ' + r.name : 'Remove ' + (r.name || 'row'),
+      title: r.inVivaldi ? 'Clear theme and emoji (the workspace stays in Vivaldi)' : 'Remove' });
+    del.onclick = () => {
+      if (r.inVivaldi) { r.theme = ''; r.emoji = r.vivaldiEmoji; } else rows.splice(i, 1);
+      renderWs(); markDirty();
+    };
+    box.append(el('div', { className: 'ws-row' }, emoji, name, sel, del));
+  });
+}
+
+function toggle(key, label, help, { disabled = false } = {}) {
+  const input = el('input', { type: 'checkbox', checked: !!cfg[key], disabled });
+  input.onchange = () => { cfg[key] = input.checked; markDirty(); renderOpts(); };
+  const id = 'opt-' + key; input.id = id;
+  const lbl = el('label', { htmlFor: id, textContent: label });
+  return el('div', { className: 'opt' },
+    el('div', { className: 'txt' }, lbl, el('small', { textContent: help })),
+    el('div', { className: 'switch' }, input, el('span')));
+}
+function number(key, label, help, min, step) {
+  const input = el('input', { type: 'number', value: cfg[key], min, step, id: 'opt-' + key });
+  input.oninput = () => { const v = parseFloat(input.value); if (!isNaN(v) && v >= min) { cfg[key] = v; markDirty(); } };
+  return el('div', { className: 'opt' },
+    el('div', { className: 'txt' }, el('label', { htmlFor: input.id, textContent: label }), el('small', { textContent: help })),
+    input);
+}
+
+function renderOpts() {
+  $('layoutOpts').replaceChildren(
+    toggle('arcLayout', 'Recommended Arc layout', 'Tabs on the left, panel icons in a row under the tabs, no top bar or status bar.'),
+    toggle('addressFieldInSidebar', 'Address field in the sidebar', 'A pill under the workspace name, with a copy button.'),
+  );
+  $('tabOpts').replaceChildren(
+    number('oldTabHours', 'Old after (hours)', 'Tabs you haven\'t opened for this long are dimmed, and Clear closes them.', 0.25, 0.25),
+    number('unloadTabHours', 'Unload idle tabs after (hours)', 'Frees memory. 0 = never.', 0, 0.5),
+    toggle('groupBySite', 'Stack tabs by site', 'Three or more tabs from one site become a stack. Needs Tab Stacking set to Accordion.'),
+    toggle('saveClearedTabs', 'Keep cleared tabs as bookmarks', 'Clear saves what it closes to a "Cleared tabs" folder.'),
+  );
+  const extras = [];
+  if (!S.config && S.iCloudAvailable) {
+    extras.push(toggle('useICloud', 'Keep settings in iCloud Drive', 'All your Macs share the same workspaces and themes. Chosen once, on first setup.'));
+  }
+  extras.push(toggle('autoReinstall', 'Reinstall after Vivaldi updates',
+    'A small helper app puts the mods back after each update. It needs App Management permission.'));
+  const syncOk = cfg.useICloud || S.configInICloud || !!cfg.syncFolder;
+  if (!syncOk && cfg.syncPinnedTabs) cfg.syncPinnedTabs = false;
+  extras.push(toggle('syncPinnedTabs', 'Sync pinned tabs between Macs',
+    syncOk ? 'Through the same helper app. It needs Full Disk Access.' : 'Needs your settings in iCloud Drive.', { disabled: !syncOk }));
+  $('extraOpts').replaceChildren(...extras);
+}
+
+function renderStatus() {
+  const s = S.status;
+  const pill = (on, text, warn) => el('span', { className: 'pill' }, el('span', { className: 'dot' + (on ? ' on' : warn ? ' warn' : '') }), text);
+  $('status').replaceChildren(
+    pill(s.jsInstalled, s.jsInstalled ? 'Mods installed' : 'Mods not installed', true),
+    pill(s.autoReinstallJob, s.autoReinstallJob ? 'Auto-reinstall on' : 'Auto-reinstall off'),
+    pill(s.pinnedSyncJob, s.pinnedSyncJob ? 'Pinned sync on' : 'Pinned sync off'),
+  );
+  $('cfgPath').replaceChildren(S.config ? 'Saved in ' : 'Not set up yet. It will be saved in ',
+    el('code', { textContent: S.config ? S.configPath : (cfg.useICloud ? 'iCloud Drive/VivaldiArcify/config.json' : S.configPath) }),
+    '. In a terminal: ', el('code', { textContent: 'arcify help' }), '.');
+  $('quickBtn').hidden = !S.config;
+  const banner = $('banner'); banner.replaceChildren();
+  if (!s.vivaldiInstalled || !s.profileExists) {
+    banner.append(el('div', { className: 'banner err', textContent: 'Open Vivaldi once so it creates your profile, then reload this page.' }));
+  }
+}
+
+// ── Load / save ─────────────────────────────────────────────────────────
+function buildRows() {
+  const fromCfg = cfg.workspaces || [];
+  const viv = S.vivaldiWorkspaces;
+  rows = viv.map((w) => {
+    const c = fromCfg.find((x) => x.name === w.name) || {};
+    return { ...c, name: w.name, emoji: c.emoji || w.emoji, theme: c.theme || '', inVivaldi: true, vivaldiEmoji: w.emoji, inCfg: !!c.name };
+  });
+  for (const c of fromCfg) if (!viv.some((w) => w.name === c.name)) rows.push({ ...c, inVivaldi: false, inCfg: true });
+}
+
+function payload() {
+  const ws = rows.filter((r) => r.name && r.name.trim() &&
+      (!r.inVivaldi || r.inCfg || r.theme || (r.emoji && r.emoji !== r.vivaldiEmoji)))
+    .map((r) => {
+      const o = { name: r.name.trim() };
+      if (r.emoji) o.emoji = r.emoji;
+      if (r.theme) o.theme = r.theme;
+      if (r.linkRoutes) o.linkRoutes = r.linkRoutes;
+      return o;
+    });
+  const { useICloud, ...rest } = cfg;
+  return { useICloud: !!useICloud, config: { ...rest, workspaces: ws } };
+}
+
+async function load() {
+  S = await api('/api/state');
+  cfg = { ...DEFAULTS, ...(S.config || {}) };
+  paint(cfg.defaultTheme);
+  buildRows();
+  renderStatus(); renderThemes(); renderWs(); renderOpts();
+  if (S.job.started) showJob(S.job);
+  if (S.job.running) poll();
+}
+
+const strip = (s) => s.replace(/\x1b\[[0-9;]*m/g, '');
+function showJob(j) {
+  $('logWrap').classList.add('show');
+  $('log').textContent = strip(j.log);
+  $('log').scrollTop = 1e9;
+  const busy = j.running;
+  $('applyBtn').disabled = $('quickBtn').disabled = busy;
+  if (busy) {
+    $('logTitle').textContent = 'Setting up…';
+    $('barMsg').textContent = 'Working. Vivaldi will quit and come back; this page returns with it.';
+  } else if (j.exit === 0) {
+    $('logTitle').textContent = 'Done ✓';
+    $('barMsg').textContent = 'All set. Restart Vivaldi if only the tab options changed.';
+  } else if (j.exit !== null) {
+    $('logTitle').textContent = 'Something went wrong';
+    $('barMsg').textContent = 'See the log above. Fix it and apply again.';
+  }
+}
+
+let timer;
+function poll() {
+  clearTimeout(timer);
+  timer = setTimeout(async () => {
+    try {
+      const j = await api('/api/job');
+      showJob(j);
+      if (j.running) poll(); else { dirty = false; const st = await api('/api/state'); S.status = st.status; S.config = st.config; S.configPath = st.configPath; S.configInICloud = st.configInICloud; renderStatus(); renderOpts(); }
+    } catch { poll(); }
+  }, 700);
+}
+
+async function go(path) {
+  $('applyBtn').disabled = $('quickBtn').disabled = true;
+  try {
+    await api(path, payload());
+    showJob({ running: true, log: '', exit: null });
+    poll();
+  } catch (e) {
+    $('barMsg').textContent = 'Couldn\'t start: ' + e.message;
+    $('applyBtn').disabled = $('quickBtn').disabled = false;
+  }
+}
+$('applyBtn').onclick = () => go('/api/apply');
+$('quickBtn').onclick = () => go('/api/update');
+$('addWs').onclick = () => {
+  rows.push({ name: '', emoji: '', theme: '', inVivaldi: false });
+  renderWs(); markDirty();
+  $('ws').querySelectorAll('input[type=text]:not(.emoji)').forEach((x, i, a) => i === a.length - 1 && x.focus());
+};
+addEventListener('beforeunload', (e) => { if (dirty && !$('applyBtn').disabled) e.preventDefault(); });
+
+load().catch((e) => {
+  document.body.replaceChildren(el('div', { className: 'frame' }, el('h1', { textContent: 'Vivaldi Arcify' }),
+    el('p', { textContent: 'The settings server isn\'t running. In a terminal, run: arcify ui' })));
+});
+</script>
+</body>
+</html>
